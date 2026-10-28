@@ -17,7 +17,7 @@ function react(a){animation=a;until=Date.now()+2300;$('reactionTag').textContent
 function init(){scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,100);camera.position.set(0,1.25,6.7);renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;stage.appendChild(renderer.domElement);scene.add(new THREE.HemisphereLight(0xd7d5ff,0x28111b,2.2));let k=new THREE.DirectionalLight(0xffd5d0,3.1);k.position.set(3,5,4);scene.add(k);let r=new THREE.PointLight(0xff345b,14,12);r.position.set(-3,2,1);scene.add(r);clock=new THREE.Clock();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});renderer.setAnimationLoop(()=>{let t=clock.getElapsedTime();if(Date.now()>until)animation='idle';avatar.position.y=Math.sin(t*1.5)*.035;avatar.rotation.y=Math.sin(t*.45)*.07;avatar.userData.ring.rotation.z=t*.18;if(animation==='dance'){avatar.rotation.y=Math.sin(t*11)*.38;avatar.position.y=Math.abs(Math.sin(t*11))*.13}if(animation==='jump')avatar.position.y=Math.abs(Math.sin(t*5))*1.1;if(animation==='explosion'||animation==='ultimate'){avatar.scale.setScalar(1.05+Math.abs(Math.sin(t*13))*.13);avatar.rotation.y=Math.sin(t*13)*.2}if(animation==='celebrate')avatar.position.y=Math.abs(Math.sin(t*9))*.25;renderer.render(scene,camera)});character(settings.character)}
 let fishAudio=null;
 async function speak(text){
- if(settings.voice==='fish'){
+ if(settings.voice==='fish'||settings.voice==='chatterbox'){
   try{
    const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||`HTTP ${response.status}`)}
@@ -27,7 +27,7 @@ async function speak(text){
    fishAudio.playbackRate=Number(settings.voiceRate||1);
    await fishAudio.play();
    return;
-  }catch(error){console.error('Fish Audio falhou no overlay:',error);return}
+  }catch(error){console.error('Falha de voz no overlay:',error);return}
  }
  if(!('speechSynthesis'in window))return;
  speechSynthesis.cancel();

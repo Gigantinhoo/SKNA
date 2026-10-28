@@ -1,4 +1,16 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Carrega o .env ao lado do server.js, mesmo que o terminal seja aberto em outra pasta.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envResult = dotenv.config({ path: path.join(__dirname, '.env') });
+if (envResult.error && envResult.error.code !== 'ENOENT') {
+  console.error('Erro ao ler .env:', envResult.error.message);
+}
+console.log('[CONFIG] .env encontrado:', !envResult.error);
+console.log('[CONFIG] Provedor de voz:', process.env.TTS_PROVIDER || 'browser');
+console.log('[CONFIG] Chatterbox local: sem chave de API; exige serviço Python em execução.');
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
@@ -18,7 +30,7 @@ let settings = {
   character: 'sukuna',
   background: 'shrine',
   aiProvider: process.env.AI_PROVIDER || 'openai',
-  voice: process.env.TTS_PROVIDER === 'fish' ? 'fish' : 'browser',
+  voice: ['chatterbox', 'fish', 'browser'].includes(process.env.TTS_PROVIDER) ? process.env.TTS_PROVIDER : 'browser',
   voiceRate: 1,
   voicePitch: 0.72,
   replyToChat: true,
@@ -42,7 +54,7 @@ app.get('/api/status', (_, res) => res.json({
   settings,
   tiktokStatus,
   aiConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.XAI_API_KEY),
-  ttsConfigured: Boolean(process.env.FISH_AUDIO_API_KEY),
+  ttsConfigured: (process.env.TTS_PROVIDER === 'chatterbox') || Boolean(process.env.FISH_AUDIO_API_KEY),
   ttsProvider: process.env.TTS_PROVIDER || 'browser'
 }));
 app.post('/api/settings', (req, res) => {
@@ -110,8 +122,30 @@ app.post('/api/disconnect-tiktok', async (_, res) => {
   res.json({ ok: true });
 });
 app.post('/api/tts', async (req, res) => {
-  const text = String(req.body.text || '').slice(0, 1500);
+  const text = String(req.body.text || '').slice(0, 300);
   if (!text.trim()) return res.status(400).json({ error: 'Texto vazio.' });
+
+  if ((settings.voice || process.env.TTS_PROVIDER) === 'chatterbox' || process.env.TTS_PROVIDER === 'chatterbox') {
+    try {
+      const response = await fetch(`http://127.0.0.1:${process.env.LOCAL_TTS_PORT || 8765}/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        console.error('Chatterbox local error:', response.status, detail);
+        return res.status(response.status).json({ error: `Chatterbox local: ${detail.slice(0, 500)}` });
+      }
+      res.setHeader('Content-Type', 'audio/wav');
+      res.setHeader('Cache-Control', 'no-store');
+      return res.send(Buffer.from(await response.arrayBuffer()));
+    } catch (error) {
+      console.error('Chatterbox local indisponível:', error.message);
+      return res.status(502).json({ error: 'A voz local não está iniciada. Execute INICIAR-VOZ-LOCAL.bat e aguarde o modelo carregar.' });
+    }
+  }
+
   if (!process.env.FISH_AUDIO_API_KEY) return res.status(400).json({ error: 'FISH_AUDIO_API_KEY não está configurada no .env.' });
   const referenceId = process.env.FISH_AUDIO_VOICE_ID || '';
   try {
@@ -122,11 +156,7 @@ app.post('/api/tts', async (req, res) => {
         'Content-Type': 'application/json',
         'model': process.env.FISH_AUDIO_MODEL || 's2.1-pro'
       },
-      body: JSON.stringify({
-        text,
-        ...(referenceId ? { reference_id: referenceId } : {}),
-        format: 'mp3'
-      })
+      body: JSON.stringify({ text, ...(referenceId ? { reference_id: referenceId } : {}), format: 'mp3' })
     });
     if (!response.ok) {
       const detail = await response.text();

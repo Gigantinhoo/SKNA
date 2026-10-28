@@ -10,7 +10,7 @@ Aplicativo local para controlar um avatar 3D estilizado, testar reações, conec
 - Backend Node.js com WebSocket para distribuir eventos ao painel e overlay.
 - Conector comunitário TikTok Live (pode quebrar quando o TikTok mudar).
 - Integração opcional de texto com API OpenAI ou xAI.
-- Voz do navegador em português e integração de TTS com Fish Audio por API.
+- Voz do navegador, Fish Audio por API e Chatterbox Multilingual executado localmente sem chave/API.
 
 ## Requisitos
 - Windows 10/11
@@ -50,6 +50,22 @@ Aplicativo local para controlar um avatar 3D estilizado, testar reações, conec
 ## TikTok
 Digite o usuário sem `@` no painel e clique em Conectar quando a conta estiver ao vivo. Este MVP usa uma biblioteca comunitária não oficial, sem garantia de estabilidade ou suporte do TikTok. Pode exigir ajustes de versão e não é uma integração oficial. Não automatiza comentários enviados de volta ao chat, apenas exibe e fala as respostas no overlay.
 
+## Voz local grátis com Chatterbox (recomendado)
+O Chatterbox Multilingual é um modelo aberto sob licença MIT, oferece português e clonagem zero-shot com um áudio de referência. Ele roda no seu computador, sem créditos por requisição. A primeira instalação baixa dependências e pesos do modelo e pode levar bastante tempo; a geração fica limitada à capacidade do PC. Os arquivos gerados contêm marca d'água de áudio do modelo.
+
+1. Instale Python 3.11 (marque **Add Python to PATH** durante a instalação): https://www.python.org/downloads/release/python-3119/
+2. Execute `INSTALAR-VOZ-LOCAL.bat` e aguarde terminar.
+3. Execute `INICIAR-VOZ-LOCAL.bat` e espere aparecer `[LOCAL TTS] Modelo pronto.`. Mantenha essa janela aberta.
+4. No `.env`, deixe `TTS_PROVIDER=chatterbox`.
+5. Reinicie o Sukuna (`npm.cmd start`). No painel, escolha **Chatterbox local · grátis**.
+6. Para usar uma voz de referência, coloque um arquivo WAV de voz que você tenha direito de usar na pasta do projeto com o nome `voice-reference.wav`. Se não existir, o modelo usa a voz padrão. Recomenda-se um trecho limpo de fala, sem música nem ruído, com consentimento da pessoa gravada.
+
+O serviço de voz local usa `127.0.0.1:8765`; ele não é exposto à rede. Requer internet na primeira instalação para baixar dependências/modelos, mas a geração depois ocorre localmente. Se o PC não tiver CUDA compatível, tentará CPU, que pode ser muito lento.
+
+Links oficiais:
+- Código e instruções: https://github.com/resemble-ai/chatterbox
+- Modelo multilíngue: https://huggingface.co/ResembleAI/chatterbox
+
 ## Voz e personagem
 A voz do navegador funciona sem chave de API. A Fish Audio usa a API real no backend: configure `TTS_PROVIDER=fish`, `FISH_AUDIO_API_KEY` e `FISH_AUDIO_VOICE_ID` no arquivo `.env`. O painel e o overlay do OBS usam o provedor selecionado nas configurações. O projeto não clona a voz de Wendell Bezerra ou de outro dublador. Para uso público/comercial, utilize voz licenciada ou uma voz original autorizada.
 
@@ -57,7 +73,7 @@ Os modelos 3D são formas procedurais de demonstração, não modelos oficiais d
 
 ## Limitações e próximos passos
 - Eventos de presentes podem ter nomes localizados e a biblioteca pode entregar campos diferentes; revise os mapeamentos em `server.js`.
-- A Fish Audio gera áudio por API e pode consumir créditos. Se a chamada falhar, confira o terminal do servidor, a chave, os créditos e o Voice ID.
+- A Fish Audio gera áudio por API e pode consumir créditos. O Chatterbox local não usa API paga. Se a chamada falhar, confira o terminal do servidor, a chave, os créditos e o Voice ID.
 - Adicionar fila de fala, interrupção de falas, moderação, lista de usuários ignorados, limite de custo e métricas de eventos.
 - A aplicação escuta apenas em `127.0.0.1`, adequada para uso local.
 

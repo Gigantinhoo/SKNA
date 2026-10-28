@@ -104,7 +104,7 @@ function addChat(type,who,message){
 }
 let fishAudio = null;
 async function speak(text){
-  if(settings.voice==='fish'){
+  if(settings.voice==='fish'||settings.voice==='chatterbox'){
     try {
       const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
       if(!response.ok){const error=await response.json().catch(()=>({}));throw new Error(error.error||'Erro na Fish Audio');}
@@ -115,7 +115,7 @@ async function speak(text){
       await fishAudio.play();
       return;
     } catch(err) {
-      addChat('comment','VOZ',`Fish Audio falhou: ${err.message}. Confira o terminal do servidor e a chave no .env.`);
+      addChat('comment','VOZ',`${settings.voice==='chatterbox'?'Chatterbox local':'Fish Audio'} falhou: ${err.message}.`);
       return; // Não troca silenciosamente para a voz do navegador quando Fish está selecionado.
     }
   }

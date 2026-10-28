@@ -8,3 +8,8 @@ node_modules/
 
 # Sistema operacional
 .DS_Store
+
+.venv-tts/
+voice-reference.wav
+__pycache__/
+*.pyc
