@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sukuna Live Studio</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark">呪</div><div><b>CURSED STUDIO</b><small>LIVE AVATAR CONTROL</small></div></div>
+    <div class="side-label">ESTÚDIO</div>
+    <button class="nav active" data-tab="studio">◈ <span>Visão geral</span></button>
+    <button class="nav" data-tab="characters">♙ <span>Personagem</span></button>
+    <button class="nav" data-tab="voice">♫ <span>Voz e IA</span></button>
+    <button class="nav" data-tab="connection">⌁ <span>Conexão TikTok</span></button>
+    <div class="side-bottom"><span class="live-dot"></span><span id="sideStatus">Offline · local</span><small>v0.1.0 ALPHA</small></div>
+  </aside>
+  <main>
+    <header><div><div class="eyebrow">PAINEL DE CONTROLE / LOCALHOST</div><h1>Sukuna Live Studio</h1><p>Seu avatar 3D, pronto para dominar o chat.</p></div><div class="header-actions"><span class="pill"><i></i><span id="connectionLabel">DESCONECTADO</span></span><button class="primary" id="openObs">Abrir tela de live ↗</button></div></header>
+    <section class="metrics">
+      <div class="metric"><span>STATUS DA LIVE</span><strong id="metricStatus">Offline</strong><small>Conexão TikTok</small></div>
+      <div class="metric"><span>PERSONAGEM ATIVO</span><strong id="metricCharacter">Sukuna</strong><small>Câmera fixa · 3D</small></div>
+      <div class="metric"><span>PROVEDOR DE IA</span><strong id="metricAI">OpenAI</strong><small>Resposta curta</small></div>
+      <div class="metric"><span>SAÍDA DE ÁUDIO</span><strong id="metricVoice">Navegador</strong><small>Voz local de teste</small></div>
+    </section>
+    <div class="layout">
+      <section class="panel preview-panel">
+        <div class="panel-head"><div><h2>Prévia do personagem</h2><p>Visualização para OBS · 9:16</p></div><button class="ghost" id="fullscreen">⛶ Tela cheia</button></div>
+        <div class="avatar-stage" id="avatarStage">
+          <div class="stage-glow"></div><div class="sigil">呪</div>
+          <div id="avatar3d" aria-label="Avatar 3D estilizado"></div>
+          <div class="stage-caption"><span id="avatarName">SUKUNA</span><small id="avatarLine">O rei das maldições está observando.</small></div>
+          <div class="reaction-tag" id="reactionTag">PRONTO PARA A LIVE</div>
+        </div>
+        <div class="preview-controls"><label>PERSONAGEM<select id="character"><option value="sukuna">Sukuna · Maldição</option><option value="goku">Goku · Guerreiro</option><option value="sonic">Sonic · Velocista</option><option value="original">Avatar original</option></select></label><label>CENÁRIO<select id="background"><option value="shrine">Santuário sombrio</option><option value="dojo">Dojo de batalha</option><option value="cyber">Cyber neon</option><option value="space">Espaço profundo</option></select></label></div>
+        <div class="action-row"><button class="primary" id="testDance">▶ Testar dança</button><button class="secondary" id="testJump">↑ Testar pulo</button><button class="secondary" id="testExplosion">✦ Testar especial</button></div>
+      </section>
+      <section class="right-column">
+        <section class="panel connection-panel"><div class="panel-head"><div><h2>Conexão com TikTok</h2><p>Conecte pelo @ da conta que está ao vivo.</p></div><span class="status-dot" id="statusDot"></span></div><form id="tiktokForm"><label>USUÁRIO DO TIKTOK</label><div class="input-row"><span>@</span><input id="username" placeholder="seuusuario" autocomplete="off"><button class="primary" type="submit">Conectar</button></div></form><div class="connection-foot"><span id="tiktokMessage">Aguardando conexão</span><button class="text-button" id="disconnect">Desconectar</button></div><div class="notice">A conexão usa uma biblioteca comunitária e pode mudar se o TikTok alterar o serviço. Use apenas em lives e contas que você controla.</div></section>
+        <section class="panel chat-panel"><div class="panel-head"><div><h2>Chat em tempo real</h2><p>Comentários e reações recebidas</p></div><span class="counter" id="chatCount">0 eventos</span></div><div class="chat-feed" id="chatFeed"><div class="empty-chat"><div>◌</div><b>O chat está quieto.</b><span>Use os testes abaixo para simular comentários e presentes.</span></div></div><div class="simulate"><input id="testComment" placeholder="Digite um comentário de teste…"><button id="sendTest">Enviar</button></div><div class="gift-tests"><button data-gift="Rosa">🌹 Rosa · dança</button><button data-gift="Balão">🎈 Balão · pulo</button><button data-gift="Galáxia">🌌 Galáxia · especial</button></div></section>
+      </section>
+    </div>
+    <section class="panel settings-panel" id="settingsPanel"><div class="panel-head"><div><h2>Comportamento do avatar</h2><p>Controle como ele fala e reage durante a live.</p></div></div><div class="settings-grid">
+      <label class="toggle-row"><span><b>Responder comentários</b><small>A IA gera respostas faladas para o chat.</small></span><input type="checkbox" id="replyChat" checked><i></i></label>
+      <label class="toggle-row"><span><b>Reagir aos presentes</b><small>Dispara animação por tipo de presente.</small></span><input type="checkbox" id="replyGifts" checked><i></i></label>
+      <label class="setting-field"><span>PROVEDOR DE IA</span><select id="aiProvider"><option value="openai">OpenAI · ChatGPT API</option><option value="xai">xAI · Grok API</option><option value="local">Modo local · sem API</option></select><small>Assinaturas ChatGPT/Grok não incluem crédito de API.</small></label>
+      <label class="setting-field"><span>VOZ</span><select id="voice"><option value="browser">Voz do navegador · teste</option><option value="fish">Fish Audio · configurar API</option><option value="elevenlabs">ElevenLabs · configurar API</option></select><small>Voz de anime original. Não inclui clonagem de dublador.</small></label>
+      <label class="setting-field"><span>VELOCIDADE DA FALA <b id="rateLabel">1.0×</b></span><input type="range" min="0.7" max="1.35" step="0.05" value="1" id="voiceRate"></label>
+      <label class="setting-field"><span>INTERVALO ENTRE RESPOSTAS</span><select id="cooldown"><option value="5">5 segundos</option><option value="8" selected>8 segundos</option><option value="15">15 segundos</option><option value="30">30 segundos</option></select><small>Evita que o personagem fale sem parar.</small></label>
+    </div><div class="panel-bottom"><span id="saveStatus">Configurações locais</span><button class="primary" id="saveSettings">Salvar configurações</button></div></section>
+    <footer>CURSED STUDIO <span>Feito para lives · processamento local</span></footer>
+  </main>
+</div>
+<script type="module" src="/app.js"></script>
+</body></html>

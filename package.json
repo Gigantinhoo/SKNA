@@ -1,0 +1,19 @@
+{
+  "name": "sukuna-live",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicativo local para avatar 3D interativo em lives do TikTok",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openai": "^4.77.0",
+    "tiktok-live-connector": "^2.1.0",
+    "ws": "^8.18.0"
+  }
+}
