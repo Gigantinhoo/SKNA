@@ -1,6 +1,6 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const $=id=>document.getElementById(id),stage=$('avatar3d');
-let renderer,scene,camera,avatar,clock,animation='idle',until=0,settings={character:'sukuna',background:'shrine',voiceRate:1};
+let renderer,scene,camera,avatar,clock,animation='idle',until=0,settings={character:'sukuna',background:'shrine',voice:'browser',voiceRate:1};
 const names={sukuna:'SUKUNA',goku:'GOKU',sonic:'SONIC',original:'AVATAR'},lines={sukuna:'O rei das maldições está observando.',goku:'Vamos treinar? Estou pronto!',sonic:'Não me acompanha nem nos sonhos!',original:'A transmissão está sob controle.'};
 function material(color){return new THREE.MeshStandardMaterial({color,roughness:.5})}
 function mesh(p,g,m,pos,scale,rot){let o=new THREE.Mesh(g,m);o.position.set(...pos);if(scale)o.scale.set(...scale);if(rot)o.rotation.set(...rot);p.add(o);return o}
@@ -15,5 +15,25 @@ function bg(b){let s={shrine:['#6c2438','#2b1526','#10111b'],dojo:['#5d3922','#2
 function character(c){settings.character=c;build();$('avatarName').textContent=names[c]||'AVATAR';$('avatarLine').textContent=lines[c]||'';bg(settings.background)}
 function react(a){animation=a;until=Date.now()+2300;$('reactionTag').textContent=({dance:'REAÇÃO: DANÇA',jump:'REAÇÃO: PULO',explosion:'EXPANSÃO DE DOMÍNIO',ultimate:'TÉCNICA SUPREMA',celebrate:'PRESENTE RECEBIDO'})[a]||'REAÇÃO';if(a==='explosion'||a==='ultimate'){let f=document.createElement('div');f.className='flash';$('avatarStage').appendChild(f);setTimeout(()=>f.remove(),450)}}
 function init(){scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,100);camera.position.set(0,1.25,6.7);renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;stage.appendChild(renderer.domElement);scene.add(new THREE.HemisphereLight(0xd7d5ff,0x28111b,2.2));let k=new THREE.DirectionalLight(0xffd5d0,3.1);k.position.set(3,5,4);scene.add(k);let r=new THREE.PointLight(0xff345b,14,12);r.position.set(-3,2,1);scene.add(r);clock=new THREE.Clock();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});renderer.setAnimationLoop(()=>{let t=clock.getElapsedTime();if(Date.now()>until)animation='idle';avatar.position.y=Math.sin(t*1.5)*.035;avatar.rotation.y=Math.sin(t*.45)*.07;avatar.userData.ring.rotation.z=t*.18;if(animation==='dance'){avatar.rotation.y=Math.sin(t*11)*.38;avatar.position.y=Math.abs(Math.sin(t*11))*.13}if(animation==='jump')avatar.position.y=Math.abs(Math.sin(t*5))*1.1;if(animation==='explosion'||animation==='ultimate'){avatar.scale.setScalar(1.05+Math.abs(Math.sin(t*13))*.13);avatar.rotation.y=Math.sin(t*13)*.2}if(animation==='celebrate')avatar.position.y=Math.abs(Math.sin(t*9))*.25;renderer.render(scene,camera)});character(settings.character)}
-const ws=new WebSocket(`ws://${location.host}`);ws.onmessage=e=>{let d=JSON.parse(e.data);if(d.type==='state'||d.type==='settings'){settings={...settings,...d.settings};character(settings.character);bg(settings.background)}if(d.type==='reaction')react(d.reaction);if(d.type==='reply'&&'speechSynthesis'in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(d.text);u.lang='pt-BR';u.rate=Number(settings.voiceRate||1);u.pitch=.72;speechSynthesis.speak(u)}if(d.type==='event'&&d.event.kind==='gift'){}};
+let fishAudio=null;
+async function speak(text){
+ if(settings.voice==='fish'){
+  try{
+   const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+   if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||`HTTP ${response.status}`)}
+   const blob=await response.blob();
+   if(fishAudio){fishAudio.pause();URL.revokeObjectURL(fishAudio.src)}
+   fishAudio=new Audio(URL.createObjectURL(blob));
+   fishAudio.playbackRate=Number(settings.voiceRate||1);
+   await fishAudio.play();
+   return;
+  }catch(error){console.error('Fish Audio falhou no overlay:',error);return}
+ }
+ if(!('speechSynthesis'in window))return;
+ speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);
+ utterance.lang='pt-BR';utterance.rate=Number(settings.voiceRate||1);utterance.pitch=.72;
+ speechSynthesis.speak(utterance);
+}
+const ws=new WebSocket(`ws://${location.host}`);ws.onmessage=e=>{let d=JSON.parse(e.data);if(d.type==='state'||d.type==='settings'){settings={...settings,...d.settings};character(settings.character);bg(settings.background)}if(d.type==='reaction')react(d.reaction);if(d.type==='reply')speak(d.text);if(d.type==='event'&&d.event.kind==='gift'){}};
 init();

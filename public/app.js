@@ -114,7 +114,10 @@ async function speak(text){
       fishAudio.playbackRate=Number(settings.voiceRate||1);
       await fishAudio.play();
       return;
-    } catch(err) { addChat('comment','VOZ',`Fish Audio: ${err.message}`); }
+    } catch(err) {
+      addChat('comment','VOZ',`Fish Audio falhou: ${err.message}. Confira o terminal do servidor e a chave no .env.`);
+      return; // Não troca silenciosamente para a voz do navegador quando Fish está selecionado.
+    }
   }
   if(!('speechSynthesis' in window))return;
   speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='pt-BR';u.rate=Number(settings.voiceRate||1);u.pitch=Number(settings.voicePitch||.72);

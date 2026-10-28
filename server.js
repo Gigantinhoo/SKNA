@@ -18,7 +18,7 @@ let settings = {
   character: 'sukuna',
   background: 'shrine',
   aiProvider: process.env.AI_PROVIDER || 'openai',
-  voice: 'browser',
+  voice: process.env.TTS_PROVIDER === 'fish' ? 'fish' : 'browser',
   voiceRate: 1,
   voicePitch: 0.72,
   replyToChat: true,
@@ -38,7 +38,13 @@ wss.on('connection', ws => {
   ws.on('close', () => clients.delete(ws));
 });
 
-app.get('/api/status', (_, res) => res.json({ settings, tiktokStatus, aiConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.XAI_API_KEY) }));
+app.get('/api/status', (_, res) => res.json({
+  settings,
+  tiktokStatus,
+  aiConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.XAI_API_KEY),
+  ttsConfigured: Boolean(process.env.FISH_AUDIO_API_KEY),
+  ttsProvider: process.env.TTS_PROVIDER || 'browser'
+}));
 app.post('/api/settings', (req, res) => {
   settings = { ...settings, ...req.body };
   broadcast('settings', { settings });

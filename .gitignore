@@ -1,6 +1,10 @@
-.env
-node_modules/
-.DS_Store
+# Segredos e configuração local
 .env
 .env.*
 !.env.example
+
+# Dependências
+node_modules/
+
+# Sistema operacional
+.DS_Store
