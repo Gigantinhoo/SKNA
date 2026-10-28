@@ -21,7 +21,7 @@ def load_model():
     if MODEL is None:
         print(f"[LOCAL TTS] Carregando Chatterbox Multilingual V3 em {DEVICE}.")
         print("[LOCAL TTS] A primeira inicialização baixa os pesos do modelo; pode demorar.")
-        MODEL = ChatterboxMultilingualTTS.from_pretrained(device=DEVICE, t3_model="v3")
+        MODEL = ChatterboxMultilingualTTS.from_pretrained(device=DEVICE)
         print("[LOCAL TTS] Modelo pronto.")
     return MODEL
 
@@ -57,7 +57,7 @@ class Handler(BaseHTTPRequestHandler):
             if not text:
                 return self.respond_json(400, {"error": "Texto vazio."})
             model = load_model()
-            kwargs = {"language_id": "pt", "exaggeration": 0.65, "cfg_weight": 0.35}
+            kwargs = {"language_id": "Portuguese", "exaggeration": 0.65, "cfg_weight": 0.35}
             if REFERENCE_AUDIO.exists():
                 kwargs["audio_prompt_path"] = str(REFERENCE_AUDIO)
                 print(f"[LOCAL TTS] Usando áudio de referência: {REFERENCE_AUDIO.name}")
